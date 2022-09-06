@@ -1,68 +1,81 @@
-import './App.css';
-import WebGLCanvas from '../WebGLCanvas/WebGLCanvas';
+import { useState } from 'react';
+import style from './App.css';
+import VoronoiDiagram from '../VoronoiDiagram/VoronoiDiagram';
+
+const width = 600;
+const height = 600;
 
 const App = () => {
-    const vertex_shader_source = `
-attribute vec2 pos;
+    const points = [];
 
-varying vec2 frag_pos;
+    const [px, set_x] = useState(100);
+    const [py, set_y] = useState(100);
 
-void main() {
-  gl_Position = vec4(pos, 0, 1);
-  frag_pos = pos;
-}
-`;
+    const [dragged, set_dragged] = useState(false);
+    const [mouse_start, set_mouse_start] = useState({ x: 0, y: 0 });
+    const drag_start = (e) => {
+        console.log('Drag start');
+        set_mouse_start({ x: e.pageX, y: e.pageY });
+        set_dragged(true);
+    };
 
-    const fragment_shader_source = `
-precision highp float;
+    const drag_move = (e) => {
+        if (dragged) {
+            console.log('Drag move');
+            set_x(px + (e.pageX - mouse_start.x));
+            set_y(py + (e.pageY - mouse_start.y));
+            set_mouse_start({ x: e.pageX, y: e.pageY });
+        }
+    };
 
-varying vec2 frag_pos;
-
-uniform vec2 points[4];
-uniform vec4 colors[4];
-
-float d(vec2 a, vec2 b) {
-  vec2 dif = abs(a - b);
-  return dot(dif, dif);
-}
-
-void main() {
-    // gl_FragColor = vec4(1, (frag_pos.x + 1.) / 2., (frag_pos.y + 1.) / 2., 1);
-
-    float min_d = d(frag_pos, points[0]);
-    vec4 min_color = colors[0];
-    for (int i = 0; i < 4; i += 1) {
-      float dist = d(frag_pos, points[i]);
-      if (dist < min_d) {
-        min_color = colors[i];
-        min_d = dist;
-      }
-    }
-
-    gl_FragColor = min_color;
-}
-`;
+    const drag_end = (e) => {
+        console.log('Drag end');
+        set_mouse_start({ x: e.pageX, y: e.pageY });
+        set_dragged(false);
+    };
 
     return (
-        <div className="App">
-            <WebGLCanvas
-                width={400}
-                height={400}
-                vertex_shader_source={vertex_shader_source}
-                fragment_shader_source={fragment_shader_source}
-                attributes={[
-                  {
-                    name: 'pos',
-                    values: [-1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, -1],
-                    size: 2
-                  }
+        <div className={style.App} style={{ position: 'relative' }}>
+            <VoronoiDiagram
+                width={width}
+                height={height}
+                points={[
+                    { x: 2 * (px / 600) - 1, y: 2 * (1 - py / 600) - 1 },
+                    { x: 0.5, y: 0.5 },
+                    { x: -0.5, y: 0.5 },
+                    { x: 0.5, y: -0.5 },
+                    { x: -0.5, y: -0.5 },
                 ]}
-                uniforms={[
-                  {name: 'points', type: 'vec2[]', value: [0, 0, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5]},
-                  {name: 'colors', type: 'vec4[]', value: [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1]}
+                colors={[
+                    { r: 1, g: 1, b: 0, a: 1 },
+                    { r: 1, g: 0, b: 0, a: 1 },
+                    { r: 0, g: 1, b: 0, a: 1 },
+                    { r: 0, g: 0, b: 1, a: 1 },
+                    { r: 0, g: 1, b: 1, a: 1 },
                 ]}
-                vertex_count={6}
-            ></WebGLCanvas>
+            />
+
+            <svg
+                width={width}
+                height={height}
+                style={{ position: 'absolute', top: 0, left: 0 }}
+                viewBox="0 0 600 600"
+                xmlns="http://www.w3.org/2000/svg"
+
+                onMouseMove={drag_move}
+                onMouseUp={drag_end}
+            >
+                <circle
+                    id="1a"
+                    // cx={(px + 1) / 2}
+                    // cy={1 - (py + 1) / 2}
+                    cx={px}
+                    cy={py}
+                    r={600 * 0.01}
+                    onMouseDown={drag_start}
+                    // onMouseLeave={drag_end}
+                ></circle>
+            </svg>
         </div>
     );
 };

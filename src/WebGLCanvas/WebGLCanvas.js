@@ -29,27 +29,34 @@ const createProgram = (gl, vertexShader, fragmentShader) => {
     gl.deleteProgram(program);
 };
 
-// props = {vertex_shader_source: string, fragment_shader_source: string, attributes: [{name: string, size: int, values: array}], uniforms: [] vertex_count: int}
+/**
+ * Renders a webgl canvas
+ * @param {string} props.vertex_source Source for the vertex shader
+ * @param {string} props.fragment_source Source for the fragment shader
+ * @param {{name: string, size: int, values: int[]}[]} props.attributes Attributes in the vertex shader
+ * @param {{name: string, type: string, value: *}[]} props.uniforms Uniforms in the shaders
+ * @param {int} props.vertex_count Number of vertices
+ */
 const WebGLCanvas = (props) => {
     const canvasRef = useRef();
 
     // runs after component is mounted
     useEffect(() => {
         if (canvasRef.current) {
-            const gl_context = canvasRef.current.getContext('webgl');
+            const gl_context = canvasRef.current.getContext('webgl2');
 
             // compile vertex shader
             const vertex_shader = createShader(
                 gl_context,
                 gl_context.VERTEX_SHADER,
-                props.vertex_shader_source
+                props.vertex_source
             );
 
             // compile fragment shader
             const fragment_shader = createShader(
                 gl_context,
                 gl_context.FRAGMENT_SHADER,
-                props.fragment_shader_source
+                props.fragment_source
             );
 
             // attach shaders
@@ -92,41 +99,49 @@ const WebGLCanvas = (props) => {
                     uniform.name
                 );
 
-                if (uniform.type == 'float') {
+                if (uniform.type === 'float') {
                     gl_context.uniform1f(uniform_location, uniform.value);
-                } else if (uniform.type == 'float[]') {
+                } else if (uniform.type === 'float[]') {
                     gl_context.uniform1fv(uniform_location, uniform.value);
-                } else if (uniform.type == 'vec2') {
+                } else if (uniform.type === 'vec2') {
                     gl_context.uniform2f(uniform_location, uniform.value);
-                } else if (uniform.type == 'vec2[]') {
+                } else if (uniform.type === 'vec2[]') {
                     gl_context.uniform2fv(uniform_location, uniform.value);
-                } else if (uniform.type == 'vec4[]') {
+                } else if (uniform.type === 'vec4[]') {
                     gl_context.uniform4fv(uniform_location, uniform.value);
                 }
             }
 
-            // function render() {
-            gl_context.viewport(
-                0,
-                0,
-                gl_context.canvas.width,
-                gl_context.canvas.height
-            );
+            function render() {
+                gl_context.viewport(
+                    0,
+                    0,
+                    gl_context.canvas.width,
+                    gl_context.canvas.height
+                );
 
-            gl_context.clearColor(0, 0, 0, 1);
-            gl_context.clear(gl_context.COLOR_BUFFER_BIT);
-            gl_context.useProgram(program);
+                gl_context.clearColor(0, 0, 0, 0);
+                gl_context.clear(gl_context.COLOR_BUFFER_BIT);
+                gl_context.useProgram(program);
 
-            gl_context.drawArrays(
-                gl_context.TRIANGLES, // primitive
-                0, // offset
-                props.vertex_count // count
-            );
-            // }
+                gl_context.drawArrays(
+                    gl_context.TRIANGLES, // primitive
+                    0, // offset
+                    props.vertex_count // count
+                );
+            }
+            
+            render();
+            gl_context.enable(gl_context.SAMPLE_COVERAGE);
+            gl_context.sampleCoverage(0.5, false);
 
-            console.log(gl_context);
+
+            // console.log(gl_context);
         }
     });
+
+    // useEffect(() => console.log('Effect 1'));
+    // useEffect(() => console.log('Effect 2'));
 
     return (
         <>
