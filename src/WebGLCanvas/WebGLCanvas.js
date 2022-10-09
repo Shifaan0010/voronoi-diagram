@@ -120,7 +120,7 @@ const WebGLCanvas = (props) => {
                     gl_context.canvas.height
                 );
 
-                gl_context.clearColor(0, 0, 0, 0);
+                gl_context.clearColor(1, 1, 1, 1);
                 gl_context.clear(gl_context.COLOR_BUFFER_BIT);
                 gl_context.useProgram(program);
 
@@ -130,11 +130,10 @@ const WebGLCanvas = (props) => {
                     props.vertex_count // count
                 );
             }
-            
+
             render();
             gl_context.enable(gl_context.SAMPLE_COVERAGE);
-            gl_context.sampleCoverage(0.5, false);
-
+            // gl_context.sampleCoverage(0.75, false);
 
             // console.log(gl_context);
         }
@@ -144,13 +143,12 @@ const WebGLCanvas = (props) => {
     // useEffect(() => console.log('Effect 2'));
 
     return (
-        <>
-            <canvas
-                ref={canvasRef}
-                width={props.width}
-                height={props.height}
-            ></canvas>
-        </>
+        <canvas
+            {...props}
+            ref={canvasRef}
+            width={props.width}
+            height={props.height}
+        />
     );
 };
 

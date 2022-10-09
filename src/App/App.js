@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import style from './App.css';
+import React, { useState } from 'react';
+import style from './App.module.css';
 import VoronoiDiagram from '../VoronoiDiagram/VoronoiDiagram';
+import DraggableSVG from '../DraggableSVG/DraggableSVG'
 
 const width = 600;
 const height = 600;
@@ -8,13 +9,13 @@ const height = 600;
 const App = () => {
     const points = [];
 
-    const [px, set_x] = useState(100);
-    const [py, set_y] = useState(100);
+    const [px, set_x] = useState(250);
+    const [py, set_y] = useState(320);
 
     const [dragged, set_dragged] = useState(false);
     const [mouse_start, set_mouse_start] = useState({ x: 0, y: 0 });
     const drag_start = (e) => {
-        console.log('Drag start');
+        console.log('Drag start', e.target);
         set_mouse_start({ x: e.pageX, y: e.pageY });
         set_dragged(true);
     };
@@ -35,12 +36,13 @@ const App = () => {
     };
 
     return (
-        <div className={style.App} style={{ position: 'relative' }}>
+        <div className={style.App} style={{ position: 'relative', height: height }}>
             <VoronoiDiagram
                 width={width}
                 height={height}
+                style={{ position: 'absolute', top: 0, left: 0 }}
                 points={[
-                    { x: 2 * (px / 600) - 1, y: 2 * (1 - py / 600) - 1 },
+                    { x: 2 * (px / width) - 1, y: 2 * (1 - py / height) - 1 },
                     { x: 0.5, y: 0.5 },
                     { x: -0.5, y: 0.5 },
                     { x: 0.5, y: -0.5 },
@@ -55,12 +57,11 @@ const App = () => {
                 ]}
             />
 
-            <svg
+            <DraggableSVG
                 width={width}
                 height={height}
                 style={{ position: 'absolute', top: 0, left: 0 }}
-                viewBox="0 0 600 600"
-                xmlns="http://www.w3.org/2000/svg"
+                viewBox={`0 0 ${width} ${height}`}
 
                 onMouseMove={drag_move}
                 onMouseUp={drag_end}
@@ -71,11 +72,15 @@ const App = () => {
                     // cy={1 - (py + 1) / 2}
                     cx={px}
                     cy={py}
-                    r={600 * 0.01}
+                    r={Math.min(width, height) * 0.01}
+                    // fill="rgba(0, 0, 0, 0)"
+                    // stroke="black"
+                    strokeWidth={0.005 * Math.min(width, height)}
                     onMouseDown={drag_start}
-                    // onMouseLeave={drag_end}
-                ></circle>
-            </svg>
+                    style={{zIndex: 1}}
+                    key={1}
+                />
+            </DraggableSVG>
         </div>
     );
 };

@@ -1,3 +1,4 @@
+import React from 'react';
 import WebGLCanvas from '../WebGLCanvas/WebGLCanvas';
 
 /**
@@ -52,6 +53,7 @@ const VoronoiDiagram = (props) => {
 
     return (
         <WebGLCanvas
+            {...props}
             width={props.width}
             height={props.height}
             vertex_source={vertex_source}
@@ -67,16 +69,20 @@ const VoronoiDiagram = (props) => {
                 {
                     name: 'points',
                     type: 'vec2[]',
-                    value: props.points.map(({x, y}) => [x, y]).reduce((a, b) => [...a, ...b], []),
+                    value: props.points
+                        .map(({ x, y }) => [x, y])
+                        .reduce((a, b) => [...a, ...b], []),
                 },
                 {
                     name: 'colors',
                     type: 'vec4[]',
-                    value: props.colors.map(({r, g, b, a}) => [r, g, b, a]).reduce((a, b) => [...a, ...b], []),
+                    value: props.colors
+                        .map(({ r, g, b, a }) => [r, g, b, a])
+                        .reduce((a, b) => [...a, ...b], []),
                 },
             ]}
             vertex_count={6}
-        ></WebGLCanvas>
+        />
     );
 };
 
